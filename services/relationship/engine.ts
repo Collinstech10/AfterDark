@@ -1,0 +1,3 @@
+export type Relationship = { trust:number; attachment:number; curiosity:number; fear:number; suspicion:number; familiarity:number };
+export const initialRelationship: Relationship={trust:10,attachment:5,curiosity:20,fear:15,suspicion:8,familiarity:0};
+export function applyChoice(state:Relationship, choice:"comfort"|"press"|"withdraw"):Relationship { const change=choice==="comfort"?{trust:5,attachment:3,fear:-2}:choice==="press"?{curiosity:4,suspicion:2,trust:-1}:{familiarity:-1,attachment:-2}; return Object.fromEntries(Object.entries(state).map(([k,v])=>[k,Math.max(0,Math.min(100,v+(change[k as keyof typeof change]||0))])) as Relationship; }

@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { requireUser, adminSupabase } from "@/lib/supabase-server";
+const schema=z.object({displayName:z.string().trim().min(1).max(80),nickname:z.string().trim().max(80).optional(),interests:z.array(z.string().trim().min(1).max(60)).max(8).default([])});
+export async function POST(request:Request){const parsed=schema.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:"Tell Luma a little more."},{status:400});try{const user=await requireUser(request);const db=adminSupabase();await Promise.all([db.from("profiles").upsert({id:user.id,display_name:parsed.data.displayName,nickname:parsed.data.nickname||null,interests:parsed.data.interests}),db.from("relationship_states").upsert({user_id:user.id},{onConflict:"user_id",ignoreDuplicates:true}),db.from("story_progress").upsert({user_id:user.id},{onConflict:"user_id",ignoreDuplicates:true})]);return NextResponse.json({ok:true});}catch{return NextResponse.json({error:"The first night could not begin."},{status:401});}}

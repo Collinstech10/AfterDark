@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { requireUser } from "@/lib/supabase-server";
+const schema=z.object({planId:z.literal("afterdark-monthly")});
+export async function POST(request:Request){const parsed=schema.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:"That plan is unavailable."},{status:400});let user;try{user=await requireUser(request);}catch{return NextResponse.json({error:"Please sign in."},{status:401});}const secret=process.env.PAYSTACK_SECRET_KEY;if(!secret)return NextResponse.json({error:"Payments are unavailable."},{status:503});const response=await fetch("https://api.paystack.co/transaction/initialize",{method:"POST",headers:{Authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({email:user.email,amount:250000,metadata:{user_id:user.id,plan_id:parsed.data.planId}})});if(!response.ok)return NextResponse.json({error:"The checkout door is closed for now."},{status:502});const data=await response.json();return NextResponse.json({authorizationUrl:data.data.authorization_url,reference:data.data.reference});}

@@ -1,0 +1,6 @@
+"use client";
+import { getApp, getApps, initializeApp } from "firebase/app";
+import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
+const config={apiKey:process.env.NEXT_PUBLIC_FIREBASE_API_KEY,authDomain:process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,projectId:process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,storageBucket:process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,messagingSenderId:process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,appId:process.env.NEXT_PUBLIC_FIREBASE_APP_ID};
+export async function enablePush(vapidKey:string,onToken:(token:string)=>Promise<void>){if(!await isSupported())return false;const app=getApps().length?getApp():initializeApp(config);const registration=await navigator.serviceWorker.register("/firebase-messaging-sw.js");const token=await getToken(getMessaging(app),{vapidKey,serviceWorkerRegistration:registration});if(token)await onToken(token);return Boolean(token);}
+export async function listenForForegroundMessages(onNotification:(title:string,body:string)=>void){if(!await isSupported())return;const app=getApps().length?getApp():initializeApp(config);onMessage(getMessaging(app),payload=>onNotification(payload.notification?.title??"Luma",payload.notification?.body??"Something changed while you were gone."));}

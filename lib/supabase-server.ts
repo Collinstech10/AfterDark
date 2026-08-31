@@ -1,0 +1,3 @@
+import { createClient } from "@supabase/supabase-js";
+export function adminSupabase(){ const url=process.env.NEXT_PUBLIC_SUPABASE_URL, key=process.env.SUPABASE_SERVICE_ROLE_KEY; if(!url||!key) throw new Error("Server database is not configured"); return createClient(url,key,{auth:{persistSession:false}}); }
+export async function requireUser(request:Request){ const token=request.headers.get("authorization")?.replace(/^Bearer\s+/i,""); if(!token) throw new Error("Unauthenticated"); const db=adminSupabase(); const {data:{user},error}=await db.auth.getUser(token); if(error||!user)throw new Error("Unauthenticated"); return user; }

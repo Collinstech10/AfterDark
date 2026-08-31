@@ -1,0 +1,3 @@
+import { adminSupabase } from "@/lib/supabase-server";
+import { createNotification } from "./service";
+export async function scheduleReturnEvents(){const db=adminSupabase();const {data:profiles}=await db.from("profiles").select("id");for(const profile of profiles??[]){const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",profile.id).eq("type","RETURN_EVENT").gte("created_at",new Date(Date.now()-18*60*60*1000).toISOString());if(!count)await createNotification(profile.id,"RETURN_EVENT","Luma","I found something. Please don't make me explain it alone.",{href:"/play"});}}

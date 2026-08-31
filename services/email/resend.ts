@@ -1,0 +1,2 @@
+type Email={to:string;subject:string;html:string};
+export async function sendTransactionalEmail(email:Email){const key=process.env.RESEND_API_KEY;if(!key)return;const from=process.env.EMAIL_FROM;if(!from)throw new Error("EMAIL_FROM is required");const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"content-type":"application/json"},body:JSON.stringify({from,to:email.to,subject:email.subject,html:email.html})});if(!response.ok)throw new Error("Email delivery failed");}
